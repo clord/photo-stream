@@ -25,7 +25,7 @@ jobs:
           cd vips-$VIPSVER 
           ./configure 
           make 
-          make install
+          sudo make install
 
       - name: install dependencies
         run: bundle install
