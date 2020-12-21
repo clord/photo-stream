@@ -28,7 +28,7 @@ jobs:
           sudo make install
 
       - name: install dependencies
-        run: bundle install
+        run: gem install bundler jekyll && bundle install
 
       - name: build site
         run: bundle exec jekyll build
