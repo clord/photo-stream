@@ -36,7 +36,9 @@ jobs:
           make 
 
       - name: install vips
-        run: sudo make install
+        run: | 
+          cd vips-$VIPSVER 
+          sudo make install
 
       - name: install dependencies
         run: gem install bundler jekyll && bundle install
