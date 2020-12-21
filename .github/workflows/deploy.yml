@@ -1,5 +1,8 @@
 name: deploy
 
+env: 
+  VIPSVER: 8.10.5
+
 on:
   push:
     branches: [master]
@@ -16,16 +19,24 @@ jobs:
         with:
           ruby-version: '2.6'
 
-      - name: get vips dependency
-        env: 
-          VIPSVER: 8.10.5
+      - name: cached vips
+        id: vips-cache
+        uses: actions/cache@v2
+        with:
+          path: vips-$VIPSVER
+          key: ${{ runner.os }}-vips
+
+      - name: build vips dependency
+        if: steps.vips-cache.outputs.cache-hit != true
         run: |
           wget -O ./vips-$VIPSVER.tar.gz https://github.com/libvips/libvips/releases/download/v$VIPSVER/vips-$VIPSVER.tar.gz
           tar -xvzf ./vips-$VIPSVER.tar.gz 
           cd vips-$VIPSVER 
           ./configure 
           make 
-          sudo make install
+
+      - name: install vips
+        run: sudo make install
 
       - name: install dependencies
         run: gem install bundler jekyll && bundle install
