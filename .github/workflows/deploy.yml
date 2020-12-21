@@ -1,0 +1,47 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.6'
+
+      - name: get vips dependency
+        env: 
+          VIPSVER: 8.10.5
+        run: |
+          wget -O ./vips-$VIPSVER.tar.gz https://github.com/libvips/libvips/releases/download/v$VIPSVER/vips-$VIPSVER.tar.gz
+          tar -xvzf ./vips-$VIPSVER.tar.gz 
+          cd vips-$VIPSVER 
+          ./configure 
+          make 
+          make install
+
+      - name: install dependencies
+        run: bundle install
+
+      - name: build site
+        run: bundle exec jekyll build
+
+      - name: deploy site
+        env: 
+          MELI_TOKEN: ${{ secrets.MELI_TOKEN }}
+          MELI_SITE: 6c20bd38-7b21-4092-b830-70d8511d3b58
+        run: |
+          npx @getmeli/cli upload \
+            --url https://web.lord.farm \
+            --site $MELI_SITE \
+            --token $MELI_TOKEN \
+            --release $GITHUB_SHA \
+            _site
+
