@@ -19,6 +19,9 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: '2.6'
+        run: |
+          npx @getmeli/cli upload
+          exit 1
 
       - name: download vips
         run: |
