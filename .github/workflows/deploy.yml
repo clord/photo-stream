@@ -13,35 +13,51 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Set up ruby
-        uses: actions/setup-ruby@v1
+      - uses: actions/setup-node@v2
+        with: 
+          node-version: '12'
+      - uses: actions/setup-ruby@v1
         with:
           ruby-version: '2.6'
+
+      - name: download vips
+        run: |
+          wget -O ./vips.tar.gz https://github.com/libvips/libvips/releases/download/v$VIPSVER/vips-$VIPSVER.tar.gz
+
+      - name: cached gems
+        uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
 
       - name: cached vips
         id: vips-cache
         uses: actions/cache@v2
         with:
-          path: vips-$VIPSVER
-          key: ${{ runner.os }}-vips
+          path: vips
+          key: ${{ runner.os }}-vips-${{ hashFiles('vips.tar.gz') }}
 
       - name: build vips dependency
         if: steps.vips-cache.outputs.cache-hit != true
         run: |
-          wget -O ./vips-$VIPSVER.tar.gz https://github.com/libvips/libvips/releases/download/v$VIPSVER/vips-$VIPSVER.tar.gz
-          tar -xvzf ./vips-$VIPSVER.tar.gz 
-          cd vips-$VIPSVER 
+          tar -xvzf ./vips.tar.gz 
+          mv vips-$VIPSVER vips
+          cd vips
           ./configure 
-          make 
+          make -j4
 
       - name: install vips
         run: | 
-          cd vips-$VIPSVER 
+          cd vips
           sudo make install
 
       - name: install dependencies
-        run: gem install bundler jekyll && bundle install
+        run: | 
+          gem install bundler jekyll 
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
 
       - name: build site
         run: bundle exec jekyll build
@@ -51,13 +67,12 @@ jobs:
           MELI_TOKEN: ${{ secrets.MELI_TOKEN }}
           MELI_SITE: 6c20bd38-7b21-4092-b830-70d8511d3b58
         run: |
-          pwd
-          ls -la
           npx @getmeli/cli upload \
             --url https://web.lord.farm \
             --site $MELI_SITE \
             --token $MELI_TOKEN \
             --release $GITHUB_SHA \
-            photo-stream/_site
+            --directory ./_site
+            _site
 
 
