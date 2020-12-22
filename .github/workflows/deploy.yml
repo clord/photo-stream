@@ -23,7 +23,7 @@ jobs:
           ruby-version: '2.6'
 
       - run: |
-          npx '@getmeli/cli' upload
+          npx @getmeli/cli@next upload
           exit 1
 
       - name: download vips
@@ -73,6 +73,6 @@ jobs:
           MELI_TOKEN: ${{ secrets.MELI_TOKEN }}
           MELI_SITE: 6c20bd38-7b21-4092-b830-70d8511d3b58
         run: |
-          npx @getmeli/cli upload --url https://web.lord.farm --site $MELI_SITE --token $MELI_TOKEN --release $GITHUB_SHA  ./_site
+          npx @getmeli/cli@next upload --url https://web.lord.farm --site $MELI_SITE --token $MELI_TOKEN --release $GITHUB_SHA  ./_site
 
 
