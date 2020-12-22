@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: '2.6'
-        run: |
+      - run: |
           npx @getmeli/cli upload
           exit 1
 
